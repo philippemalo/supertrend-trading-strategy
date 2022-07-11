@@ -19,8 +19,6 @@ def supertrend(df: pd.DataFrame, period: int=15, multiplier: int=3):
     hl2 = (df['high'] + df['low']) / 2
     df['upperband'] = hl2 + (multiplier * df['atr'])
     df['lowerband'] = hl2 - (multiplier * df['atr'])
-    df['upperband'] = hl2 + (multiplier * df['atr'])
-    df['lowerband'] = hl2 - (multiplier * df['atr'])
     df['in_uptrend'] = True
 
     for current in range(1, len(df.index)):
