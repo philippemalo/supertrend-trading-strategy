@@ -7,6 +7,10 @@ import time
 from datetime import datetime
 import warnings
 warnings.filterwarnings('ignore')
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def supertrend(df: pd.DataFrame, period: int=15, multiplier: int=3):
     # Calculating Average True Range on candlesticks data.
@@ -50,9 +54,18 @@ def check_buy_sell_signals(df: pd.DataFrame):
 
 
 def run_bot():
+    key = os.getenv('FTX_BOT_API_KEY')
+    secret = os.getenv('FTX_BOT_API_SECRET')
+    exchange = ccxt.ftx({
+        'apiKey': key,
+        'secret': secret
+    })
+    exchange.headers = {
+        'FTX-SUBACCOUNT': 'bot'
+    }
+
     print(f'Fetching new candles for {datetime.now().isoformat()}')
-    exchange = ccxt.ftx()
-    candles = exchange.fetch_ohlcv('BTC/USD', timeframe='1m', limit=1000)
+    candles = exchange.fetch_ohlcv('BTC/USD', timeframe='1m', limit=120)
     df = pd.DataFrame(candles, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
     df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
     
@@ -60,7 +73,7 @@ def run_bot():
 
     check_buy_sell_signals(supertrend_data)
 
-schedule.every(2).seconds.do(run_bot)
+schedule.every(15).seconds.do(run_bot)
 
 while True:
     schedule.run_pending()
